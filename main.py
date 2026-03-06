@@ -1,36 +1,114 @@
-# # Подключаем модуль случайных чисел 
-# import random
-# # Заготовка для первого предложения
-# first = ["Сегодня — идеальный день для новых начинаний.","Оптимальный день для того, чтобы решиться на смелый поступок!","Будьте осторожны, сегодня звёзды могут повлиять на ваше финансовое состояние.","Лучшее время для того, чтобы начать новые отношения или разобраться со старыми.","Плодотворный день для того, чтобы разобраться с накопившимися делами."]
-# second = ["Но помните, что даже в этом случае нужно не забывать про","Если поедете за город, заранее подумайте про","Те, кто сегодня нацелен выполнить множество дел, должны помнить про","Если у вас упадок сил, обратите внимание на","Помните, что мысли материальны, а значит вам в течение дня нужно постоянно думать про"]
-# second_add = ["отношения с друзьями и близкими.","работу и деловые вопросы, которые могут так некстати помешать планам.","себя и своё здоровье, иначе к вечеру возможен полный раздрай.","бытовые вопросы — особенно те, которые вы не доделали вчера.","отдых, чтобы не превратить себя в загнанную лошадь в конце месяца."]
-# third = ["Злые языки могут говорить вам обратное, но сегодня их слушать не нужно.","Знайте, что успех благоволит только настойчивым, поэтому посвятите этот день воспитанию духа.","Даже если вы не сможете уменьшить влияние ретроградного Меркурия, то хотя бы доведите дела до конца.","Не нужно бояться одиноких встреч — сегодня то самое время, когда они значат многое.","Если встретите незнакомца на пути — проявите участие, и тогда эта встреча посулит вам приятные хлопоты."]
+# from email.mime import message
+import os
 
-    
 # Підключаємо модуль випадкових чисел
 import random
-# Заготівля для першої пропозиції
-first = ["Сьогодні — ідеальний день для нових починань.","Оптимальний день для того, щоб зважитися на сміливий вчинок!","Будьте обережні, сьогодні зірки можуть вплинути на ваш фінансовий стан.","Кращий час для того, щоб почати нові відносини або розібратися зі старими.","Плідний день для того, щоб розібратися з справами, що накопичилися."]
-second = ["Але пам'ятайте, що навіть у цьому випадку потрібно не забувати про","Якщо поїдете за місто, заздалегідь подумайте про","Ті, хто сьогодні націлений виконати безліч справ, повинні пам'ятати про","Якщо у вас занепад сил, зверніть увагу на","Пам'ятайте, що думки матеріальні, а значить вам протягом дня потрібно постійно думати про"]
-second_add = ["відносини з друзями та близькими.","роботу і ділові питання, які можуть так недоречно завадити планам.","себе і своє здоров'я, інакше до вечора можливий повний роздрай.","побутові питання - особливо ті, які ви не доробили вчора." "відпочинок, щоб не перетворити себе на загнаного коня наприкінці місяця."]
-third = ["Злі язики можуть говорити вам протилежне, але сьогодні їх слухати не потрібно.","Знайте, що успіх благоволить тільки наполегливим, тому присвятіть цей день вихованню духу.","Навіть якщо ви не зможете зменшити вплив ретроградного Меркурія, то хоча б доведіть справи до кінця.", "Не треба боятися одиноких зустрічей — сьогодні той самий час, коли вони багато ви1значають.","Якщо зустрінете незнайомця на шляху - проявите участь, і тоді ця зустріч пообіцяє вам приємний клопіт."]
-# Виводимо знаки зодіаку
-print("1 - Овен")
-print("2 - Телець")
-print("3 - Близнюки")
-print("4 - Рак")
-print("5 - Лев")
-print("6 - Діва")
-print("7 - Ваги")
-print("8 - Скорпіон")
-print("9 - Стрілець")
-print("10 - Козеріг")
-print("11 - Водолій")
-print("12 - Риби")
-# Запитуємо у користувача про його знак
-zodiac = int(input("{blue}Введіть число з номером знака зодіаку: {endcolor}".format(blue="\033[96m", endcolor="\033[0m")))
-# Якщо число введено правильно — видаємо гороскоп
-if 0 < zodiac < 13: 
-    print(random.choice(first), random.choice(second), random.choice(second_add), random.choice(third))
-else: 
-    print("Ви помилилися з числом, запустіть програму ще раз")
+import telebot
+from telebot import types
+from dotenv import load_dotenv
+from data.goroscope import FIRST, SECOND, SECOND_ADD, THIRD
+# from pathlib import types
+
+# =======================
+# Load keys from .env
+# =======================
+load_dotenv()
+TELEGRAM_BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN")
+# FIRST = os.getenv("FIRST")
+# SECOND = os.getenv("SECOND")
+# SECOND_ADD = os.getenv("SECOND_ADD")
+# THIRD = os.getenv("THIRD")
+
+bot = telebot.TeleBot(str(TELEGRAM_BOT_TOKEN))
+
+# Обробник натискання на кнопки
+@bot.callback_query_handler(func=lambda call: True)
+def callback_worker(call):
+  # якщо натиснута кнопка з даними "zodiac"
+  if call.data == "zodiac": 
+    # Формуємо гороскоп
+    msg = random.choice(FIRST) + ' ' + random.choice(SECOND) + ' ' + random.choice(SECOND_ADD) + ' ' + random.choice(THIRD)
+    # Відправляємо текст в Телеграм
+    bot.send_message(call.message.chat.id, msg)
+
+
+@bot.message_handler(content_types=["text"])
+def get_text_messages(message):
+    if message.text == "Привіт":
+        bot.send_message(
+            message.from_user.id, "Привіт, зараз я розкажу тобі гороскоп на сьогодні."
+        )
+        # Створюємо клавіатуру для вибору знака зодіаку
+        keyboard = types.InlineKeyboardMarkup()
+        # По черзі створюємо кнопки для кожного знака зодіаку і додаємо їх на екран
+        key_oven = types.InlineKeyboardButton(text='Овен', callback_data='zodiac')
+        # Додаємо кнопку на екран
+        keyboard.add(key_oven)
+        key_telec = types.InlineKeyboardButton(text='Телець', callback_data='zodiac')
+        keyboard.add(key_telec)
+        key_bliznecy = types.InlineKeyboardButton(text='Близнюки', callback_data='zodiac')
+        keyboard.add(key_bliznecy)
+        key_rak = types.InlineKeyboardButton(text='Рак', callback_data='zodiac')
+        keyboard.add(key_rak)
+        key_lev = types.InlineKeyboardButton(text='Лев', callback_data='zodiac')
+        keyboard.add(key_lev)
+        key_deva = types.InlineKeyboardButton(text='Діва', callback_data='zodiac')
+        keyboard.add(key_deva)
+        key_vesy = types.InlineKeyboardButton(text='Ваги', callback_data='zodiac')
+        keyboard.add(key_vesy)
+        key_scorpion = types.InlineKeyboardButton(text='Скорпіон', callback_data='zodiac')
+        keyboard.add(key_scorpion)
+        key_strelec = types.InlineKeyboardButton(text='Стрілець', callback_data='zodiac')
+        keyboard.add(key_strelec)
+        key_kozerog = types.InlineKeyboardButton(text='Козоріг', callback_data='zodiac')
+        keyboard.add(key_kozerog)
+        key_vodoley = types.InlineKeyboardButton(text='Водолій', callback_data='zodiac')
+        keyboard.add(key_vodoley)
+        key_ryby = types.InlineKeyboardButton(text='Риби', callback_data='zodiac')
+        keyboard.add(key_ryby)
+        # Показуємо клавіатуру користувачу
+        bot.send_message(message.from_user.id, text='Оберіть свій знак зодіаку', reply_markup=keyboard)
+    elif message.text == "/help":
+        bot.send_message(message.from_user.id, "Напиши Привіт")
+    else:
+        bot.send_message(message.from_user.id, "Я тебе не розумію. Напиши /help.")
+
+
+bot.polling(none_stop=True, interval=0)
+
+
+
+
+
+# # Виводимо знаки зодіаку
+# print("1 - Овен")
+# print("2 - Телець")
+# print("3 - Близнюки")
+# print("4 - Рак")
+# print("5 - Лев")
+# print("6 - Діва")
+# print("7 - Ваги")
+# print("8 - Скорпіон")
+# print("9 - Стрілець")
+# print("10 - Козоріг")
+# print("11 - Водолій")
+# print("12 - Риби")
+
+# # Запитуємо у користувача про його знак
+# zodiac = int(
+#     input(
+#         "{blue}Введіть число з номером знака зодіаку: {endcolor}".format(
+#             blue="\033[96m", endcolor="\033[0m"
+#         )
+#     )
+# )
+# # Якщо число введено правильно — видаємо гороскоп
+# if 0 < zodiac < 13:
+#     print(
+#         random.choice(first),
+#         random.choice(second),
+#         random.choice(second_add),
+#         random.choice(third),
+#     )
+# else:
+#     print("Ви помилилися з числом, запустіть програму ще раз")
